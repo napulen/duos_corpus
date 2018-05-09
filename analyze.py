@@ -34,6 +34,15 @@ def ignoreRests(df):
 	tmpdf = df[df != "Rest"]
 	return tmpdf.dropna(how="any")
 
+def cutRests(df):
+    levels = df.columns.levels
+    # Stupid pandas black-magic to index MultiIndex dataframes
+    i = levels[0][0]
+    k = levels[1][0]
+    ##########################################################
+    new_indexes = df[i][k].apply(lambda x: 'Rest' not in x)
+    return df[new_indexes]
+
 def halfNoteSlices(df):
 	a = np.arange(df.index[0], df.index[-1] + 2.0, 2.0)
 	tmpdf = df.reindex(df.index.union(a))
@@ -56,6 +65,22 @@ def analysisHalfNotesNoRepeats(s):
 	hnh = hn.get_data('horizontal_interval', settings=horiz_setts)
 	hnngram = hn.get_data('ngram', data=[hnv,hnh], settings=ngram_setts)
 	return hn, hnngram
+
+
+# Half note slices, cutting ngrams when finding a rest in one voice
+def analysisHalfNotesCutAtRestNoRepeats(s):
+    hn = copy.deepcopy(s)
+    hnnr = hn.get_data('noterest')
+    hnnr = halfNoteSlices(hnnr)    
+    hnnr = removeDuplicates(hnnr)
+    hn._analyses['noterest'] = hnnr
+    hnv = hn.get_data('vertical_interval', settings=vert_setts)
+    hnh = hn.get_data('horizontal_interval', settings=horiz_setts)
+    hnngram = hn.get_data('ngram', data=[hnv,hnh], settings=ngram_setts)
+    # Easier to get the ngrams first and filter later
+    hnngram = cutRests(hnngram)    
+    return hn, hnngram
+
 
 # Half note slices, ignoring rests in one voice
 def analysisHalfNotes(s):
@@ -130,7 +155,7 @@ def runAnalysis(scorelist, output_json, output_tsv):
 	        parts = [tuple(parts)]
 	        ngram_setts['horizontal'] = parts
 	        ###################################
-	        hn, ngrams = analysisHalfNotesNoRepeats(s)
+	        hn, ngrams = analysisHalfNotesCutAtRestNoRepeats(s)
 	        ngramdict = ngrams.iloc[:,0].to_dict()
 	        reversengram = inverseNGramDict(ngramdict, filename)
 	        ngramsperscore[filename] = ngramdict              
