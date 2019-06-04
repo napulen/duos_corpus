@@ -156,11 +156,13 @@ def printGlobalNGram():
 		print('{}\t{}\t{}'.format(len(v),k,v))
 
 
-def runAnalysis(scorelist, output_json, output_tsv):
+def runAnalysis(scorelist, output_json, output_tsv):	
 	with open(scorelist) as f:
 	    pathnames = f.readlines()
 	    pathnames = [f.strip() for f in pathnames]
 	    for filename in pathnames:
+	        if not filename.endswith('.xml'):
+	            continue
 	        print(filename)
 	        s = Importer(filename)
 	    	### Workaround for getting the part names because the 'all' setting in vis-framework does not seem to be working for horizontal intervals
@@ -178,20 +180,20 @@ def runAnalysis(scorelist, output_json, output_tsv):
 	    	o.write(json.dumps(ngramsperscore, sort_keys=True, indent=4))
 	   
 	    with open(output_tsv, 'w') as o:
-	    	top10 = []
+	    	top20 = []
 	    	header = 'Occurrences\tNGram\tComposer\tWork\tOffset (Minim)\n'
 	    	o.write(header)
 	    	for k,v in sorted(globalngrams.items(), reverse=True, key=lambda kv: len(kv[1])):
-	    		top10.append('{}, {}'.format(len(v),k))
+	    		top20.append('{}, {}'.format(len(v),k))
 	    		o.write('{}\t{}\n'.format(len(v),k))
 	    		for x in v:
 	    			offset = x[1]
 	    			f = x[0].split('/')
 	    			composer = f[2]
-	    			work = f[3]
+	    			work = f[4]
 	    			o.write('\t\t{}\t{}\t{}\n'.format(composer,work,offset))
-	    print('Top 10')
-	    for x in top10[:10]:
+	    print('Top 20')
+	    for x in top20[:20]:
 	    	print('\t',x)
 
 if __name__ == '__main__':
