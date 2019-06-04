@@ -1,4 +1,18 @@
-# coding: utf-8
+#    N-gram analysis tool for Duos corpora
+#    Copyright 2019 Nestor Napoles Lopez
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
 from vis.models.indexed_piece import Importer
 import copy
 import numpy as np
@@ -158,7 +172,7 @@ def runAnalysis(scorelist, output_json, output_tsv):
 	        hn, ngrams = analysisHalfNotesCutAtRestNoRepeats(s)
 	        ngramdict = ngrams.iloc[:,0].to_dict()
 	        reversengram = inverseNGramDict(ngramdict, filename)
-	        ngramsperscore[filename] = ngramdict              
+	        ngramsperscore[filename] = ngramdict
 
 	    with open(output_json, 'w') as o:
 	    	o.write(json.dumps(ngramsperscore, sort_keys=True, indent=4))
