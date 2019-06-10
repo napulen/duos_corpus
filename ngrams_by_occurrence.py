@@ -46,7 +46,6 @@ if __name__ == '__main__':
                 composer = row[2]
                 if not composer in current_ngram_composer:
                     current_ngram_composer.append(composer)
-                #print(':D')
 
 
     print('Total n-grams: {}'.format(total_ngrams))
