@@ -33,8 +33,10 @@ if __name__ == '__main__':
             if row[0] and row[1]:
                 if current_ngram_composer:
                     composer = '_'.join(sorted(current_ngram_composer))
-                    l = ngrams_by_composer.get(composer, [])
-                    ngrams_by_composer[composer] = l + [(occurrences, ngram)]
+                    d = ngrams_by_composer.get(composer, OrderedDict())
+                    l = d.get(occurrences, [])
+                    d[occurrences] = l + [ngram]
+                    ngrams_by_composer[composer] = d
                 occurrences, ngram = row[0], row[1]
                 current_ngram_composer = []
                 total_ngrams += int(occurrences)
@@ -51,5 +53,6 @@ if __name__ == '__main__':
     print('Total n-grams: {}'.format(total_ngrams))
     print('Distinct n-grams: {}'.format(distinct_ngrams))
     ngrams_by_occurrence_count = [(k, len(v)) for k, v in ngrams_by_occurrence.items()]
+    ngrams_by_composer_count = {c: [(k, len(v)) for k, v in x.items()] for c, x in ngrams_by_composer.items()}
     pprint.pprint(ngrams_by_occurrence_count)
-    pprint.pprint(ngrams_by_composer)
+    pprint.pprint(ngrams_by_composer_count)
