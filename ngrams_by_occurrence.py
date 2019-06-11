@@ -52,7 +52,12 @@ if __name__ == '__main__':
 
     print('Total n-grams: {}'.format(total_ngrams))
     print('Distinct n-grams: {}'.format(distinct_ngrams))
+    print('\nAll n-grams by occurrence')
     ngrams_by_occurrence_count = [(k, len(v)) for k, v in ngrams_by_occurrence.items()]
+    for occurrence, count in ngrams_by_occurrence_count:
+        print('{}, {}'.format(occurrence, count))
     ngrams_by_composer_count = {c: [(k, len(v)) for k, v in x.items()] for c, x in ngrams_by_composer.items()}
-    pprint.pprint(ngrams_by_occurrence_count)
-    pprint.pprint(ngrams_by_composer_count)
+    for composer, d in ngrams_by_composer_count.items():
+        print('\n{}'.format(composer))
+        for occurrence, count in d:
+            print('{}, {}'.format(occurrence, count))
