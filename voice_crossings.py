@@ -39,17 +39,17 @@ if __name__ == '__main__':
             range_lower_voice = music21.interval.Interval(lower_voice[0], lower_voice[1])
             range_upper_voice = music21.interval.Interval(upper_voice[0], upper_voice[1])
             if lower_voice[1] > upper_voice[0]:
-                voicecrossing = music21.interval.Interval(upper_voice[0], lower_voice[1]).name
+                voicecrossing = music21.interval.Interval(upper_voice[0], lower_voice[1]).generic.directed
             else:
                 voicecrossing = 'No crossing'
             row = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(
                 filename,
                 lower_voice[0].nameWithOctave,
                 lower_voice[1].nameWithOctave,
-                range_lower_voice.name,
+                range_lower_voice.generic.directed,
                 upper_voice[0].nameWithOctave,
                 upper_voice[1].nameWithOctave,
-                range_upper_voice.name,
+                range_upper_voice.generic.directed,
                 voicecrossing
             )
             print(row)
