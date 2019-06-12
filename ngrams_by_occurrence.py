@@ -18,15 +18,32 @@ from collections import Counter
 from collections import OrderedDict
 import pprint
 
+
+def print_counts(occurrence, occurrence_by_composer):
+    composers = list(sorted(occurrence_by_composer.keys()))
+    composers_d = [occurrence_by_composer[c] for c in composers]
+    # Header
+    print('Occurrences,{},Total'.format(','.join(composers)))
+    # Rows
+    for ocs, all_ngrams in occurrence.items():
+        print(ocs, end='')
+        for idx, comp in enumerate(composers_d):
+            if ocs in comp:
+                print(',{}'.format(len(comp[ocs])), end='')
+            else:
+                print(',0', end='')
+        print(',{}'.format(len(all_ngrams)))
+
+
 if __name__ == '__main__':
     tsv_input = sys.argv[1]
+    ngrams_by_occurrence = OrderedDict()
+    ngrams_by_composer = {}
     with open(tsv_input, newline='') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter='\t')
         next(csv_reader, None)
         total_ngrams = 0
         distinct_ngrams = 0
-        ngrams_by_occurrence = OrderedDict()
-        ngrams_by_composer = {}
         current_ngram_composer = []
         for row in csv_reader:
             # Starting a new distinct n-gram
@@ -49,15 +66,7 @@ if __name__ == '__main__':
                 if not composer in current_ngram_composer:
                     current_ngram_composer.append(composer)
 
-
     print('Total n-grams: {}'.format(total_ngrams))
     print('Distinct n-grams: {}'.format(distinct_ngrams))
-    print('\nAll n-grams by occurrence')
-    ngrams_by_occurrence_count = [(k, len(v)) for k, v in ngrams_by_occurrence.items()]
-    for occurrence, count in ngrams_by_occurrence_count:
-        print('{}, {}'.format(occurrence, count))
-    ngrams_by_composer_count = {c: [(k, len(v)) for k, v in x.items()] for c, x in ngrams_by_composer.items()}
-    for composer, d in ngrams_by_composer_count.items():
-        print('\n{}'.format(composer))
-        for occurrence, count in d:
-            print('{}, {}'.format(occurrence, count))
+    print('Number of distinct n-grams by occurrence')
+    print_counts(ngrams_by_occurrence, ngrams_by_composer)
