@@ -43,7 +43,7 @@ def halfNoteSlices(df):
 def removeDuplicates(df):
     tmpdf = df[df != df.shift(1)].dropna(how='all')
     return tmpdf.fillna(method='ffill')
-           
+
 # Half note slices, ignoring rests in one voice + no repeats
 def analysisHalfNotesNoRepeats(s):
     hn = copy.deepcopy(s)
@@ -105,7 +105,9 @@ def analysisAttackRests(s):
 
 def runAnalysis(scorelist, output_tsv):
     josquin_intervals = Counter()
+    josquin_total_intervals = 0
     larue_intervals = Counter()
+    larue_total_intervals = 0
     with open(scorelist) as f:
         pathnames = f.readlines()
         pathnames = [f.strip() for f in pathnames]
@@ -114,23 +116,26 @@ def runAnalysis(scorelist, output_tsv):
                 continue
             print(filename)
             s = Importer(filename)
-            hn, verts = analysisHalfNotesCutAtRestNoRepeats(s)
+            _, verts = analysisHalfNotesCutAtRestNoRepeats(s)
             verts_list = list(list(verts.to_dict().values())[0].values())
             if "La Rue" in filename:
                 larue_intervals += Counter(verts_list)
+                larue_total_intervals += len(verts_list)
             else:
                 josquin_intervals += Counter(verts_list)
+                josquin_total_intervals += len(verts_list)
         with open(output_tsv, 'w') as o:
-            header = 'Interval\tLa Rue\tJosquin\n'
+            header = 'Interval\tLa Rue\tJosquin\tLa Rue (percentage)\tJosquin (percentage)\n'
             o.write(header)
             all_intervals = list(josquin_intervals.keys()) + list(larue_intervals.keys())
             all_intervals = [int(n) for n in all_intervals if n != 'Rest']
             min_interval = min(all_intervals)
             max_interval = max(all_intervals)
             for n in range(min_interval, max_interval + 1):
-                row = '{}\t{}\t{}\n'.format(n, larue_intervals[str(n)], josquin_intervals[str(n)])
+                strn = str(n)
+                row = '{}\t{}\t{}\t{}\t{}\n'.format(n, larue_intervals[strn], josquin_intervals[strn], larue_intervals[strn] / larue_total_intervals, josquin_intervals[strn] / josquin_total_intervals)
                 o.write(row)
-            rests = '{}\t{}\t{}'.format('Rest', larue_intervals['Rest'], josquin_intervals['Rest'])
+            rests = '{}\t{}\t{}\t{}\t{}'.format('Rest', larue_intervals['Rest'], josquin_intervals['Rest'], larue_intervals['Rest'] / larue_total_intervals, josquin_intervals['Rest'] / josquin_total_intervals)
             o.write(rests)
                 
 if __name__ == '__main__':
