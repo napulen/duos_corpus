@@ -20,7 +20,7 @@ if __name__ == '__main__':
     with open(scorelist) as f:
         pathnames = f.readlines()
         pathnames = [f.strip() for f in pathnames]
-        print('file\tvoice1_lowest_note\tvoice1_highest_note\tvoice1_range\tvoice2_lowest_note\tvoice2_highest_note\tvoice2_range\tvoicecrossing')
+        print('file\tpart1_lowest_note\tpart1_highest_note\tpart1_range\tpart2_lowest_note\tpart2_highest_note\tpart2_range\tpartcrossing')
         for filename in pathnames:
             if not filename.endswith('.xml'):
                 continue
@@ -35,21 +35,24 @@ if __name__ == '__main__':
                     highest = n if n > highest else highest
                     lowest = n if n < lowest else lowest
                 outer_notes.append((lowest, highest))
-            lower_voice, upper_voice = outer_notes[1], outer_notes[0]
-            range_lower_voice = music21.interval.Interval(lower_voice[0], lower_voice[1])
-            range_upper_voice = music21.interval.Interval(upper_voice[0], upper_voice[1])
-            if lower_voice[1] > upper_voice[0]:
-                voicecrossing = music21.interval.Interval(upper_voice[0], lower_voice[1]).generic.directed
+            lower_part, upper_part = outer_notes[1], outer_notes[0]
+            range_lower_part = music21.interval.Interval(lower_part[0], lower_part[1])
+            range_upper_part = music21.interval.Interval(upper_part[0], upper_part[1])
+            if lower_part[1] >= upper_part[0] and upper_part[1] >= lower_part[0]:
+                # Crossing
+                lower_crossing_note =  max(lower_part[0], upper_part[0])
+                higher_crossing_note = min(lower_part[1], upper_part[1])
+                voicecrossing = music21.interval.Interval(lower_crossing_note, higher_crossing_note).generic.directed
             else:
                 voicecrossing = 'No crossing'
             row = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(
                 filename,
-                lower_voice[0].nameWithOctave,
-                lower_voice[1].nameWithOctave,
-                range_lower_voice.generic.directed,
-                upper_voice[0].nameWithOctave,
-                upper_voice[1].nameWithOctave,
-                range_upper_voice.generic.directed,
+                lower_part[0].nameWithOctave,
+                lower_part[1].nameWithOctave,
+                range_lower_part.generic.directed,
+                upper_part[0].nameWithOctave,
+                upper_part[1].nameWithOctave,
+                range_upper_part.generic.directed,
                 voicecrossing
             )
             print(row)
