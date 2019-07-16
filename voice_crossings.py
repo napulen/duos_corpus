@@ -20,7 +20,7 @@ if __name__ == '__main__':
     with open(scorelist) as f:
         pathnames = f.readlines()
         pathnames = [f.strip() for f in pathnames]
-        print('file\tpart1_lowest_note\tpart1_highest_note\tpart1_range\tpart2_lowest_note\tpart2_highest_note\tpart2_range\tpartcrossing')
+        print('file\tpart1_lowest_note\tpart1_highest_note\tpart1_range\tpart2_lowest_note\tpart2_highest_note\tpart2_range\tcombined_range\tpartcrossing')
         for filename in pathnames:
             if not filename.endswith('.xml'):
                 continue
@@ -36,8 +36,11 @@ if __name__ == '__main__':
                     lowest = n if n < lowest else lowest
                 outer_notes.append((lowest, highest))
             lower_part, upper_part = outer_notes[1], outer_notes[0]
+            global_lowest = min((lower_part[0], upper_part[0]))
+            global_highest = max((lower_part[1], upper_part[1]))
             range_lower_part = music21.interval.Interval(lower_part[0], lower_part[1])
             range_upper_part = music21.interval.Interval(upper_part[0], upper_part[1])
+            range_combined = music21.interval.Interval(global_lowest, global_highest)
             if lower_part[1] >= upper_part[0] and upper_part[1] >= lower_part[0]:
                 # Crossing
                 lower_crossing_note =  max(lower_part[0], upper_part[0])
@@ -45,7 +48,7 @@ if __name__ == '__main__':
                 voicecrossing = music21.interval.Interval(lower_crossing_note, higher_crossing_note).generic.directed
             else:
                 voicecrossing = 'No crossing'
-            row = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(
+            row = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(
                 filename,
                 lower_part[0].nameWithOctave,
                 lower_part[1].nameWithOctave,
@@ -53,6 +56,7 @@ if __name__ == '__main__':
                 upper_part[0].nameWithOctave,
                 upper_part[1].nameWithOctave,
                 range_upper_part.generic.directed,
+                range_combined.generic.undirected,
                 voicecrossing
             )
             print(row)
