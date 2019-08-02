@@ -15,6 +15,7 @@
 
 from vis.models.indexed_piece import Importer
 from collections import Counter
+from collections import OrderedDict
 import copy
 import numpy as np
 import operator
@@ -104,10 +105,8 @@ def analysisAttackRests(s):
     return ar, arv
 
 def runAnalysis(scorelist, output_tsv):
-    josquin_intervals = Counter()
-    josquin_total_intervals = 0
-    larue_intervals = Counter()
-    larue_total_intervals = 0
+    intervals = OrderedDict()
+    total_intervals = OrderedDict()
     with open(scorelist) as f:
         pathnames = f.readlines()
         pathnames = [f.strip() for f in pathnames]
@@ -118,25 +117,35 @@ def runAnalysis(scorelist, output_tsv):
             s = Importer(filename)
             _, verts = analysisHalfNotesCutAtRestNoRepeats(s)
             verts_list = list(list(verts.to_dict().values())[0].values())
-            if "La Rue" in filename:
-                larue_intervals += Counter(verts_list)
-                larue_total_intervals += len(verts_list)
-            else:
-                josquin_intervals += Counter(verts_list)
-                josquin_total_intervals += len(verts_list)
+            composer = filename.split('/')[2]
+            composer_intervals = intervals.get(composer, Counter())
+            composer_total_intervals = total_intervals.get(composer, 0)
+            composer_intervals.update(verts_list)
+            composer_total_intervals += len(verts_list)
+            intervals[composer] = composer_intervals
+            total_intervals[composer] = composer_total_intervals
         with open(output_tsv, 'w') as o:
-            header = 'Interval\tLa Rue\tJosquin\tLa Rue (percentage)\tJosquin (percentage)\n'
+            header = "interval"
+            for composer in intervals:
+                header += '\t{0}\t{0} (percent)'.format(composer)
+            header += '\n'
             o.write(header)
-            all_intervals = list(josquin_intervals.keys()) + list(larue_intervals.keys())
+            all_intervals = []
+            [all_intervals.extend(v.keys()) for c, v in intervals.items()]
             all_intervals = [int(n) for n in all_intervals if n != 'Rest']
             min_interval = min(all_intervals)
             max_interval = max(all_intervals)
             for n in range(min_interval, max_interval + 1):
                 strn = str(n)
-                row = '{}\t{}\t{}\t{}\t{}\n'.format(n, larue_intervals[strn], josquin_intervals[strn], larue_intervals[strn] / larue_total_intervals, josquin_intervals[strn] / josquin_total_intervals)
+                row = '{}'.format(n)
+                for composer in intervals:
+                    count = intervals[composer][strn]
+                    percent = count / total_intervals[composer]
+                    row += '\t{}\t{}'.format(count, percent)
+                row += '\n'
                 o.write(row)
-            rests = '{}\t{}\t{}\t{}\t{}'.format('Rest', larue_intervals['Rest'], josquin_intervals['Rest'], larue_intervals['Rest'] / larue_total_intervals, josquin_intervals['Rest'] / josquin_total_intervals)
-            o.write(rests)
+            # rests = '{}\t{}\t{}\t{}\t{}'.format('Rest', larue_intervals['Rest'], josquin_intervals['Rest'], larue_intervals['Rest'] / larue_total_intervals, josquin_intervals['Rest'] / josquin_total_intervals)
+            # o.write(rests)
                 
 if __name__ == '__main__':
     scorelist = sys.argv[1]
